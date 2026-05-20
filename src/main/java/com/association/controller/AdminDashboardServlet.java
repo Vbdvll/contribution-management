@@ -13,16 +13,24 @@ import java.math.BigDecimal;
 @WebServlet("/admin/dashboard")
 public class AdminDashboardServlet extends HttpServlet {
 
-    private final MembreService membreService = new MembreService();
-    private final CotisationService cotisationService = new CotisationService();
-    private final AmendeService amendeService = new AmendeService();
+    private final MembreService membreService =
+            new MembreService();
+
+    private final CotisationService cotisationService =
+            new CotisationService();
+
+    private final AmendeService amendeService =
+            new AmendeService();
 
     @Override
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+    protected void doGet(
+            HttpServletRequest request,
+            HttpServletResponse response
+    )
             throws ServletException, IOException {
 
-        long totalMembres = membreService.compterMembres();
+        long totalMembres =
+                membreService.compterMembres();
 
         BigDecimal totalCotisations =
                 cotisationService.totalCotisations();
@@ -55,6 +63,9 @@ public class AdminDashboardServlet extends HttpServlet {
 
         request.getRequestDispatcher(
                 "/admin/dashboard.jsp"
-        ).forward(request, response);
+        ).forward(
+                request,
+                response
+        );
     }
 }

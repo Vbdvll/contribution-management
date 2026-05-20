@@ -22,8 +22,21 @@
                 <label class="form-label">Membre</label>
                 <select name="membreId" class="form-select" required>
                     <c:forEach var="membre" items="${membres}">
-                        <option value="${membre.id}">
+                        <option value="${membre.id}"
+                            ${membreId == membre.id ? 'selected' : ''}>
                                 ${membre.numero} - ${membre.prenom} ${membre.nom}
+                        </option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Campagne concernée</label>
+                <select name="campagneId" class="form-select" required>
+                    <c:forEach var="campagne" items="${campagnes}">
+                        <option value="${campagne.id}"
+                            ${campagneId == campagne.id ? 'selected' : ''}>
+                                ${campagne.titre} - ${campagne.montant} FCFA
                         </option>
                     </c:forEach>
                 </select>

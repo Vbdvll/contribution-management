@@ -16,6 +16,10 @@ public class Amende {
     @JoinColumn(name = "membre_id", nullable = false)
     private Membre membre;
 
+    @ManyToOne
+    @JoinColumn(name = "campagne_id")
+    private CampagneCotisation campagne;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal montant;
 
@@ -34,18 +38,16 @@ public class Amende {
     public Amende() {
     }
 
-    public Amende(Membre membre, BigDecimal montant, LocalDate dateGeneration) {
-        this.membre = membre;
-        this.montant = montant;
-        this.dateGeneration = dateGeneration;
-    }
-
     public Long getId() {
         return id;
     }
 
     public Membre getMembre() {
         return membre;
+    }
+
+    public CampagneCotisation getCampagne() {
+        return campagne;
     }
 
     public BigDecimal getMontant() {
@@ -66,6 +68,10 @@ public class Amende {
 
     public void setMembre(Membre membre) {
         this.membre = membre;
+    }
+
+    public void setCampagne(CampagneCotisation campagne) {
+        this.campagne = campagne;
     }
 
     public void setMontant(BigDecimal montant) {

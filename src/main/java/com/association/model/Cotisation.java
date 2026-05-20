@@ -26,7 +26,7 @@ public class Cotisation {
     private CampagneCotisation campagne;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal montant;
+    private java.math.BigDecimal montant;
 
     @Column(nullable = false)
     private Integer mois;
@@ -42,85 +42,33 @@ public class Cotisation {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatutCotisation statut = StatutCotisation.PAYEE;
+    private StatutCotisation statut = StatutCotisation.EN_ATTENTE;
 
     public enum StatutCotisation {
         PAYEE,
+        EN_ATTENTE,
         EN_RETARD
     }
 
-    public Cotisation() {
-    }
+    public Cotisation() {}
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public Membre getMembre() { return membre; }
+    public CampagneCotisation getCampagne() { return campagne; }
+    public java.math.BigDecimal getMontant() { return montant; }
+    public Integer getMois() { return mois; }
+    public Integer getAnnee() { return annee; }
+    public LocalDate getDatePaiement() { return datePaiement; }
+    public String getModePaiement() { return modePaiement; }
+    public StatutCotisation getStatut() { return statut; }
 
-    public Membre getMembre() {
-        return membre;
-    }
-
-    public CampagneCotisation getCampagne() {
-        return campagne;
-    }
-
-    public BigDecimal getMontant() {
-        return montant;
-    }
-
-    public Integer getMois() {
-        return mois;
-    }
-
-    public Integer getAnnee() {
-        return annee;
-    }
-
-    public LocalDate getDatePaiement() {
-        return datePaiement;
-    }
-
-    public String getModePaiement() {
-        return modePaiement;
-    }
-
-    public StatutCotisation getStatut() {
-        return statut;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setMembre(Membre membre) {
-        this.membre = membre;
-    }
-
-    public void setCampagne(CampagneCotisation campagne) {
-        this.campagne = campagne;
-    }
-
-    public void setMontant(BigDecimal montant) {
-        this.montant = montant;
-    }
-
-    public void setMois(Integer mois) {
-        this.mois = mois;
-    }
-
-    public void setAnnee(Integer annee) {
-        this.annee = annee;
-    }
-
-    public void setDatePaiement(LocalDate datePaiement) {
-        this.datePaiement = datePaiement;
-    }
-
-    public void setModePaiement(String modePaiement) {
-        this.modePaiement = modePaiement;
-    }
-
-    public void setStatut(StatutCotisation statut) {
-        this.statut = statut;
-    }
+    public void setId(Long id) { this.id = id; }
+    public void setMembre(Membre membre) { this.membre = membre; }
+    public void setCampagne(CampagneCotisation campagne) { this.campagne = campagne; }
+    public void setMontant(java.math.BigDecimal montant) { this.montant = montant; }
+    public void setMois(Integer mois) { this.mois = mois; }
+    public void setAnnee(Integer annee) { this.annee = annee; }
+    public void setDatePaiement(LocalDate datePaiement) { this.datePaiement = datePaiement; }
+    public void setModePaiement(String modePaiement) { this.modePaiement = modePaiement; }
+    public void setStatut(StatutCotisation statut) { this.statut = statut; }
 }

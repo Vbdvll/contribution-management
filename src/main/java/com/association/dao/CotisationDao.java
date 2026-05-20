@@ -28,12 +28,42 @@ public class CotisationDao {
         }
     }
 
+    public void update(Cotisation cotisation) {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            em.getTransaction().begin();
+            em.merge(cotisation);
+            em.getTransaction().commit();
+
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public Cotisation findById(Long id) {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            return em.find(Cotisation.class, id);
+
+        } finally {
+            em.close();
+        }
+    }
+
     public List<Cotisation> findAll() {
         EntityManager em = JpaUtil.getEntityManager();
 
         try {
             return em.createQuery(
-                    "SELECT c FROM Cotisation c",
+                    "SELECT c FROM Cotisation c ORDER BY c.datePaiement DESC",
                     Cotisation.class
             ).getResultList();
 
@@ -42,88 +72,24 @@ public class CotisationDao {
         }
     }
 
-    public BigDecimal sommeTotaleCotisations() {
+    public List<Cotisation> findByCampagne(Long campagneId) {
         EntityManager em = JpaUtil.getEntityManager();
 
         try {
             return em.createQuery(
-                    "SELECT COALESCE(SUM(c.montant), 0) FROM Cotisation c",
-                    BigDecimal.class
-            ).getSingleResult();
-
-        } finally {
-            em.close();
-        }
-    }
-
-    public List<Cotisation> filtrer(Integer mois, Integer annee, String statut) {
-        EntityManager em = JpaUtil.getEntityManager();
-
-        try {
-            String jpql = "SELECT c FROM Cotisation c WHERE 1=1 ";
-
-            if (mois != null) {
-                jpql += "AND c.mois = :mois ";
-            }
-
-            if (annee != null) {
-                jpql += "AND c.annee = :annee ";
-            }
-
-            if (statut != null && !statut.isEmpty()) {
-                jpql += "AND c.statut = :statut ";
-            }
-
-            var query = em.createQuery(jpql, Cotisation.class);
-
-            if (mois != null) {
-                query.setParameter("mois", mois);
-            }
-
-            if (annee != null) {
-                query.setParameter("annee", annee);
-            }
-
-            if (statut != null && !statut.isEmpty()) {
-                query.setParameter(
-                        "statut",
-                        Cotisation.StatutCotisation.valueOf(statut)
-                );
-            }
-
-            return query.getResultList();
-
-        } finally {
-            em.close();
-        }
-    }
-
-    public boolean existeCotisationPourMembreEtPeriode(
-            Long membreId,
-            Integer mois,
-            Integer annee
-    ) {
-        EntityManager em = JpaUtil.getEntityManager();
-
-        try {
-            Long count = em.createQuery(
-                            "SELECT COUNT(c) FROM Cotisation c " +
-                                    "WHERE c.membre.id = :membreId " +
-                                    "AND c.mois = :mois " +
-                                    "AND c.annee = :annee",
-                            Long.class
+                            "SELECT c FROM Cotisation c " +
+                                    "WHERE c.campagne.id = :campagneId " +
+                                    "ORDER BY c.datePaiement DESC",
+                            Cotisation.class
                     )
-                    .setParameter("membreId", membreId)
-                    .setParameter("mois", mois)
-                    .setParameter("annee", annee)
-                    .getSingleResult();
-
-            return count > 0;
+                    .setParameter("campagneId", campagneId)
+                    .getResultList();
 
         } finally {
             em.close();
         }
     }
+
     public boolean membreAPayeCampagne(Long membreId, Long campagneId) {
         EntityManager em = JpaUtil.getEntityManager();
 
@@ -139,6 +105,34 @@ public class CotisationDao {
                     .getSingleResult();
 
             return count > 0;
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public BigDecimal sommeTotaleCotisations() {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            return em.createQuery(
+                    "SELECT COALESCE(SUM(c.montant), 0) FROM Cotisation c WHERE c.statut = 'PAYEE'",
+                    BigDecimal.class
+            ).getSingleResult();
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public long countPaiementsEnAttente() {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            return em.createQuery(
+                    "SELECT COUNT(c) FROM Cotisation c WHERE c.statut = 'EN_ATTENTE'",
+                    Long.class
+            ).getSingleResult();
 
         } finally {
             em.close();

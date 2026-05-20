@@ -12,7 +12,6 @@
 
     <style>
         body { background: #eeece6; font-family: Arial, sans-serif; }
-
         .app { min-height: 100vh; padding: 30px; }
 
         .sidebar {
@@ -56,6 +55,7 @@
             background: white;
             border-radius: 25px;
             padding: 25px;
+            margin-bottom: 30px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.06);
         }
 
@@ -77,6 +77,22 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.05);
         }
 
+        .badge-payee {
+            background: #d4edda;
+            color: #1b5e20;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-attente {
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
         table {
             border-collapse: separate;
             border-spacing: 0 12px;
@@ -84,40 +100,27 @@
 
         thead th {
             border: none;
-            color: #777;
-            font-size: 14px;
-            font-weight: 600;
             background: transparent;
+            color: #777;
         }
 
         tbody tr {
-            background: #fff;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+            background: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,.05);
         }
 
         tbody td {
             border: none;
-            padding: 18px 14px;
+            padding: 18px;
             vertical-align: middle;
         }
 
-        tbody tr td:first-child { border-radius: 16px 0 0 16px; }
-        tbody tr td:last-child { border-radius: 0 16px 16px 0; }
-
-        .badge-soft-green {
-            background: #e5efe8;
-            color: #456b55;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: 600;
+        tbody tr td:first-child {
+            border-radius: 16px 0 0 16px;
         }
 
-        .badge-soft-warning {
-            background: #fff3cd;
-            color: #8a6500;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: 600;
+        tbody tr td:last-child {
+            border-radius: 0 16px 16px 0;
         }
     </style>
 </head>
@@ -130,15 +133,23 @@
         <a href="${pageContext.request.contextPath}/admin/dashboard">
             <i class="bi bi-grid-fill"></i>
         </a>
+
         <a href="${pageContext.request.contextPath}/admin/membres">
             <i class="bi bi-people"></i>
         </a>
+
+        <a href="${pageContext.request.contextPath}/admin/campagnes">
+            <i class="bi bi-calendar-check"></i>
+        </a>
+
         <a href="${pageContext.request.contextPath}/admin/cotisations" class="active">
             <i class="bi bi-cash-stack"></i>
         </a>
+
         <a href="${pageContext.request.contextPath}/admin/amendes">
             <i class="bi bi-exclamation-triangle"></i>
         </a>
+
         <a href="${pageContext.request.contextPath}/logout">
             <i class="bi bi-box-arrow-right"></i>
         </a>
@@ -150,76 +161,58 @@
 
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="fw-bold mb-1">Gestion des cotisations</h2>
-                    <p class="text-muted mb-0">
-                        Enregistrer les paiements et suivre les membres n’ayant pas encore payé
+                    <h2 class="fw-bold">Gestion des cotisations</h2>
+                    <p class="text-muted">
+                        Suivi des paiements, validations et retards.
                     </p>
                 </div>
 
                 <a href="${pageContext.request.contextPath}/admin/cotisations/ajouter"
                    class="btn btn-dark-green rounded-pill px-4 py-2">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Ajouter cotisation
+                    Enregistrer paiement
                 </a>
             </div>
 
             <form id="filterForm"
                   method="get"
-                  action="${pageContext.request.contextPath}/admin/cotisations"
-                  class="row g-3 mb-4">
+                  action="${pageContext.request.contextPath}/admin/cotisations">
 
-                <div class="col-md-4">
-                    <label class="form-label">Mois</label>
-                    <select name="mois" class="form-select filter-control auto-filter">
-                        <option value="1" ${mois == 1 ? 'selected' : ''}>Janvier</option>
-                        <option value="2" ${mois == 2 ? 'selected' : ''}>Février</option>
-                        <option value="3" ${mois == 3 ? 'selected' : ''}>Mars</option>
-                        <option value="4" ${mois == 4 ? 'selected' : ''}>Avril</option>
-                        <option value="5" ${mois == 5 ? 'selected' : ''}>Mai</option>
-                        <option value="6" ${mois == 6 ? 'selected' : ''}>Juin</option>
-                        <option value="7" ${mois == 7 ? 'selected' : ''}>Juillet</option>
-                        <option value="8" ${mois == 8 ? 'selected' : ''}>Août</option>
-                        <option value="9" ${mois == 9 ? 'selected' : ''}>Septembre</option>
-                        <option value="10" ${mois == 10 ? 'selected' : ''}>Octobre</option>
-                        <option value="11" ${mois == 11 ? 'selected' : ''}>Novembre</option>
-                        <option value="12" ${mois == 12 ? 'selected' : ''}>Décembre</option>
-                    </select>
-                </div>
+                <div class="mb-4">
+                    <label class="form-label">Campagne</label>
 
-                <div class="col-md-4">
-                    <label class="form-label">Année</label>
-                    <input type="number"
-                           name="annee"
-                           class="form-control filter-control auto-filter"
-                           value="${annee}">
-                </div>
+                    <select name="campagneId"
+                            class="form-select filter-control auto-filter">
 
-                <div class="col-md-4">
-                    <label class="form-label">Statut</label>
-                    <select name="statut" class="form-select filter-control auto-filter">
-                        <option value="" ${empty statut ? 'selected' : ''}>Tous</option>
-                        <option value="PAYEE" ${statut == 'PAYEE' ? 'selected' : ''}>Payée</option>
-                        <option value="EN_RETARD" ${statut == 'EN_RETARD' ? 'selected' : ''}>En retard</option>
+                        <option value="">Toutes les campagnes</option>
+
+                        <c:forEach var="campagne" items="${campagnes}">
+                            <option value="${campagne.id}"
+                                ${campagneId == campagne.id ? 'selected' : ''}>
+                                    ${campagne.titre} - ${campagne.montant} FCFA
+                            </option>
+                        </c:forEach>
+
                     </select>
                 </div>
 
             </form>
 
-            <div class="content-card mb-4">
+            <div class="content-card">
 
-                <h4 class="fw-bold mb-3">Cotisations enregistrées</h4>
+                <h4 class="mb-4">Paiements enregistrés</h4>
 
-                <table class="table align-middle mb-0">
+                <table class="table">
+
                     <thead>
                     <tr>
                         <th>ID</th>
                         <th>Membre</th>
+                        <th>Campagne</th>
                         <th>Montant</th>
-                        <th>Mois</th>
-                        <th>Année</th>
-                        <th>Date paiement</th>
+                        <th>Date</th>
                         <th>Mode</th>
                         <th>Statut</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
 
@@ -227,60 +220,110 @@
                     <c:forEach var="cotisation" items="${cotisations}">
                         <tr>
                             <td>${cotisation.id}</td>
-                            <td>${cotisation.membre.prenom} ${cotisation.membre.nom}</td>
+
+                            <td>
+                                    ${cotisation.membre.prenom}
+                                    ${cotisation.membre.nom}
+                            </td>
+
+                            <td>${cotisation.campagne.titre}</td>
+
                             <td>${cotisation.montant} FCFA</td>
-                            <td>${cotisation.mois}</td>
-                            <td>${cotisation.annee}</td>
+
                             <td>${cotisation.datePaiement}</td>
+
                             <td>${cotisation.modePaiement}</td>
+
                             <td>
-                                <span class="badge-soft-green">
-                                        ${cotisation.statut}
-                                </span>
+                                <c:choose>
+                                    <c:when test="${cotisation.statut == 'PAYEE'}">
+                                        <span class="badge-payee">PAYÉE</span>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        <span class="badge-attente">EN ATTENTE</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+
+                            <td>
+                                <c:if test="${cotisation.statut == 'EN_ATTENTE'}">
+                                    <a href="${pageContext.request.contextPath}/admin/cotisations/valider?id=${cotisation.id}&campagneId=${campagneId}"
+                                       class="btn btn-success btn-sm rounded-pill"
+                                       onclick="return confirm('Valider ce paiement ?')">
+                                        Valider
+                                    </a>
+                                </c:if>
+
+                                <c:if test="${cotisation.statut == 'PAYEE'}">
+                                    <span class="text-muted">Validé</span>
+                                </c:if>
                             </td>
                         </tr>
                     </c:forEach>
                     </tbody>
+
                 </table>
 
             </div>
 
-            <div class="content-card">
+            <c:if test="${not empty campagneId}">
 
-                <h4 class="fw-bold mb-3">
-                    Membres n’ayant pas encore payé pour ${mois}/${annee}
-                </h4>
+                <div class="content-card">
 
-                <table class="table align-middle mb-0">
-                    <thead>
-                    <tr>
-                        <th>Numéro</th>
-                        <th>Prénom</th>
-                        <th>Nom</th>
-                        <th>Email</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
+                    <h4 class="mb-4">
+                        <c:choose>
+                            <c:when test="${campagneEnRetard}">
+                                Membres en retard pour cette campagne
+                            </c:when>
+                            <c:otherwise>
+                                Membres n’ayant pas encore payé cette campagne
+                            </c:otherwise>
+                        </c:choose>
+                    </h4>
 
-                    <tbody>
-                    <c:forEach var="membre" items="${membresEnRetard}">
+                    <table class="table">
+
+                        <thead>
                         <tr>
-                            <td>${membre.numero}</td>
-                            <td>${membre.prenom}</td>
-                            <td>${membre.nom}</td>
-                            <td>${membre.utilisateur.email}</td>
-                            <td>
-                                <a href="${pageContext.request.contextPath}/admin/amendes/generer?membreId=${membre.id}"
-                                   class="btn btn-sm btn-warning rounded-pill px-3">
-                                    Générer amende
-                                </a>
-                            </td>
+                            <th>Numéro</th>
+                            <th>Prénom</th>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Action</th>
                         </tr>
-                    </c:forEach>
-                    </tbody>
-                </table>
+                        </thead>
 
-            </div>
+                        <tbody>
+                        <c:forEach var="membre" items="${membresSansPaiement}">
+                            <tr>
+                                <td>${membre.numero}</td>
+                                <td>${membre.prenom}</td>
+                                <td>${membre.nom}</td>
+                                <td>${membre.utilisateur.email}</td>
+
+                                <td>
+                                    <a href="${pageContext.request.contextPath}/admin/amendes/generer?membreId=${membre.id}&campagneId=${campagneId}"
+                                       class="btn btn-warning btn-sm rounded-pill ${campagneEnRetard ? '' : 'disabled'}">
+                                        <c:choose>
+                                            <c:when test="${campagneEnRetard}">
+                                                Générer amende
+                                            </c:when>
+                                            <c:otherwise>
+                                                Pas encore en retard
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </a>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </c:if>
 
         </div>
 
@@ -290,9 +333,9 @@
 
 <script>
     const filterForm = document.getElementById("filterForm");
-    const filterFields = document.querySelectorAll(".auto-filter");
+    const fields = document.querySelectorAll(".auto-filter");
 
-    filterFields.forEach(function (field) {
+    fields.forEach(function (field) {
         field.addEventListener("change", function () {
             filterForm.submit();
         });

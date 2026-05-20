@@ -1,46 +1,82 @@
 package com.association.controller;
 
+import com.association.model.CampagneCotisation;
 import com.association.model.Cotisation;
 import com.association.model.Membre;
+import com.association.service.CampagneCotisationService;
 import com.association.service.CotisationService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @WebServlet("/admin/cotisations")
 public class ListeCotisationsServlet extends HttpServlet {
 
-    private final CotisationService cotisationService = new CotisationService();
+    private final CotisationService cotisationService =
+            new CotisationService();
+
+    private final CampagneCotisationService campagneService =
+            new CampagneCotisationService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Integer mois = request.getParameter("mois") != null && !request.getParameter("mois").isEmpty()
-                ? Integer.parseInt(request.getParameter("mois"))
-                : LocalDate.now().getMonthValue();
+        List<CampagneCotisation> campagnes =
+                campagneService.listerCampagnes();
 
-        Integer annee = request.getParameter("annee") != null && !request.getParameter("annee").isEmpty()
-                ? Integer.parseInt(request.getParameter("annee"))
-                : LocalDate.now().getYear();
+        request.setAttribute("campagnes", campagnes);
 
-        String statut = request.getParameter("statut");
+        Long campagneId = null;
 
-        List<Cotisation> cotisations =
-                cotisationService.filtrerCotisations(mois, annee, statut);
+        if (request.getParameter("campagneId") != null
+                && !request.getParameter("campagneId").isEmpty()) {
 
-        List<Membre> membresEnRetard =
-                cotisationService.listerMembresEnRetard(mois, annee);
+            campagneId =
+                    Long.parseLong(request.getParameter("campagneId"));
+        }
 
-        request.setAttribute("cotisations", cotisations);
-        request.setAttribute("membresEnRetard", membresEnRetard);
-        request.setAttribute("mois", mois);
-        request.setAttribute("annee", annee);
-        request.setAttribute("statut", statut);
+        if (campagneId != null) {
+
+            List<Cotisation> cotisations =
+                    cotisationService.listerParCampagne(campagneId);
+
+            boolean campagneEnRetard =
+                    cotisationService.campagneEstEnRetard(campagneId);
+
+            List<Membre> membresSansPaiement;
+
+            if (campagneEnRetard) {
+                membresSansPaiement =
+                        cotisationService.membresEnRetardPourCampagne(campagneId);
+            } else {
+                membresSansPaiement =
+                        cotisationService.membresSansPaiement(campagneId);
+            }
+
+            request.setAttribute("cotisations", cotisations);
+            request.setAttribute("membresSansPaiement", membresSansPaiement);
+            request.setAttribute("campagneId", campagneId);
+            request.setAttribute("campagneEnRetard", campagneEnRetard);
+
+        } else {
+
+            request.setAttribute(
+                    "cotisations",
+                    cotisationService.listerToutesLesCotisations()
+            );
+
+            request.setAttribute(
+                    "membresSansPaiement",
+                    Collections.emptyList()
+            );
+
+            request.setAttribute("campagneEnRetard", false);
+        }
 
         request.getRequestDispatcher("/admin/cotisations.jsp")
                 .forward(request, response);

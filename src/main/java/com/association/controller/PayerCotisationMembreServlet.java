@@ -32,11 +32,11 @@ public class PayerCotisationMembreServlet extends HttpServlet {
                 Long.parseLong(request.getParameter("campagneId"));
 
         try {
-            cotisationService.enregistrerCotisation(
+            cotisationService.declarerPaiementMembre(
                     membre.getId(),
                     campagneId,
                     "Déclaré par membre"
-            );
+            );;
 
             response.sendRedirect(
                     request.getContextPath() + "/membre/cotisations"
