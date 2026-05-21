@@ -35,19 +35,22 @@ public class AjouterCampagneServlet extends HttpServlet {
                 LocalDate.parse(request.getParameter("dateDebut"));
 
         String dateFinParam = request.getParameter("dateFin");
-
         LocalDate dateFin = null;
 
         if (dateFinParam != null && !dateFinParam.isEmpty()) {
             dateFin = LocalDate.parse(dateFinParam);
         }
 
+        boolean retardTolere =
+                request.getParameter("retardTolere") != null;
+
         campagneService.creerCampagne(
                 titre,
                 montant,
                 frequence,
                 dateDebut,
-                dateFin
+                dateFin,
+                retardTolere
         );
 
         response.sendRedirect(request.getContextPath() + "/admin/campagnes");

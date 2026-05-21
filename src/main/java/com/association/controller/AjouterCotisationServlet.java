@@ -10,6 +10,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @WebServlet("/admin/cotisations/ajouter")
@@ -51,6 +52,9 @@ public class AjouterCotisationServlet extends HttpServlet {
         Long campagneId =
                 Long.parseLong(request.getParameter("campagneId"));
 
+        LocalDate dateEcheance =
+                LocalDate.parse(request.getParameter("dateEcheance"));
+
         String modePaiement =
                 request.getParameter("modePaiement");
 
@@ -58,6 +62,7 @@ public class AjouterCotisationServlet extends HttpServlet {
             cotisationService.enregistrerCotisation(
                     membreId,
                     campagneId,
+                    dateEcheance,
                     modePaiement
             );
 

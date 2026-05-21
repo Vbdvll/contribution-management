@@ -34,6 +34,9 @@ public class CampagneCotisation {
     @Column(nullable = false)
     private Statut statut = Statut.ACTIVE;
 
+    @Column(name = "retard_tolere", nullable = false)
+    private boolean retardTolere = true;
+
     @Column(name = "date_creation")
     private LocalDateTime dateCreation = LocalDateTime.now();
 
@@ -48,70 +51,25 @@ public class CampagneCotisation {
         TERMINEE
     }
 
-    public CampagneCotisation() {
-    }
+    public CampagneCotisation() {}
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public String getTitre() { return titre; }
+    public BigDecimal getMontant() { return montant; }
+    public Frequence getFrequence() { return frequence; }
+    public LocalDate getDateDebut() { return dateDebut; }
+    public LocalDate getDateFin() { return dateFin; }
+    public Statut getStatut() { return statut; }
+    public boolean isRetardTolere() { return retardTolere; }
+    public LocalDateTime getDateCreation() { return dateCreation; }
 
-    public String getTitre() {
-        return titre;
-    }
-
-    public BigDecimal getMontant() {
-        return montant;
-    }
-
-    public Frequence getFrequence() {
-        return frequence;
-    }
-
-    public LocalDate getDateDebut() {
-        return dateDebut;
-    }
-
-    public LocalDate getDateFin() {
-        return dateFin;
-    }
-
-    public Statut getStatut() {
-        return statut;
-    }
-
-    public LocalDateTime getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setTitre(String titre) {
-        this.titre = titre;
-    }
-
-    public void setMontant(BigDecimal montant) {
-        this.montant = montant;
-    }
-
-    public void setFrequence(Frequence frequence) {
-        this.frequence = frequence;
-    }
-
-    public void setDateDebut(LocalDate dateDebut) {
-        this.dateDebut = dateDebut;
-    }
-
-    public void setDateFin(LocalDate dateFin) {
-        this.dateFin = dateFin;
-    }
-
-    public void setStatut(Statut statut) {
-        this.statut = statut;
-    }
-
-    public void setDateCreation(LocalDateTime dateCreation) {
-        this.dateCreation = dateCreation;
-    }
+    public void setId(Long id) { this.id = id; }
+    public void setTitre(String titre) { this.titre = titre; }
+    public void setMontant(BigDecimal montant) { this.montant = montant; }
+    public void setFrequence(Frequence frequence) { this.frequence = frequence; }
+    public void setDateDebut(LocalDate dateDebut) { this.dateDebut = dateDebut; }
+    public void setDateFin(LocalDate dateFin) { this.dateFin = dateFin; }
+    public void setStatut(Statut statut) { this.statut = statut; }
+    public void setRetardTolere(boolean retardTolere) { this.retardTolere = retardTolere; }
+    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
 }

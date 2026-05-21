@@ -17,19 +17,17 @@ public class CampagneCotisationService {
             BigDecimal montant,
             String frequence,
             LocalDate dateDebut,
-            LocalDate dateFin
+            LocalDate dateFin,
+            boolean retardTolere
     ) {
         CampagneCotisation campagne = new CampagneCotisation();
 
         campagne.setTitre(titre);
         campagne.setMontant(montant);
-
-        campagne.setFrequence(
-                CampagneCotisation.Frequence.valueOf(frequence)
-        );
-
+        campagne.setFrequence(CampagneCotisation.Frequence.valueOf(frequence));
         campagne.setDateDebut(dateDebut);
         campagne.setDateFin(dateFin);
+        campagne.setRetardTolere(retardTolere);
         campagne.setStatut(CampagneCotisation.Statut.ACTIVE);
 
         campagneDao.save(campagne);
@@ -55,7 +53,6 @@ public class CampagneCotisationService {
         LocalDate aujourdHui = LocalDate.now();
 
         for (CampagneCotisation campagne : campagnes) {
-
             if (campagne.getDateFin() != null
                     && aujourdHui.isAfter(campagne.getDateFin())
                     && campagne.getStatut() == CampagneCotisation.Statut.ACTIVE) {
@@ -64,14 +61,5 @@ public class CampagneCotisationService {
                 campagneDao.update(campagne);
             }
         }
-    }
-
-    public long compterCampagnesActives() {
-        mettreAJourStatutsCampagnes();
-        return campagneDao.countActives();
-    }
-
-    public BigDecimal montantTotalAttendu() {
-        return campagneDao.montantTotalAttendu();
     }
 }

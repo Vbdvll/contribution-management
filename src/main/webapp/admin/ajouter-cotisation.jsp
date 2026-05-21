@@ -58,6 +58,13 @@
                     <option value="Mobile Money">Mobile Money</option>
                 </select>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Date échéance</label>
+                <input type="date"
+                       name="dateEcheance"
+                       class="form-control"
+                       required>
+            </div>
 
             <button type="submit" class="btn btn-primary">
                 Enregistrer paiement

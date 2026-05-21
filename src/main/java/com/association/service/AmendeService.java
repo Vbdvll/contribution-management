@@ -69,4 +69,7 @@ public class AmendeService {
     public BigDecimal totalAmendesNonPayees() {
         return amendeDao.sommeAmendesNonPayees();
     }
+    public List<Amende> listerAmendesParMembre(Long membreId) {
+        return amendeDao.findByMembre(membreId);
+    }
 }

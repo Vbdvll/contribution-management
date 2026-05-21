@@ -9,6 +9,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 
 @WebServlet("/membre/cotisations/payer")
 public class PayerCotisationMembreServlet extends HttpServlet {
@@ -20,33 +23,69 @@ public class PayerCotisationMembreServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-
-        Utilisateur utilisateur =
-                (Utilisateur) session.getAttribute("utilisateurConnecte");
-
-        Membre membre =
-                membreService.rechercherParUtilisateurId(utilisateur.getId());
-
-        Long campagneId =
-                Long.parseLong(request.getParameter("campagneId"));
-
         try {
+            HttpSession session = request.getSession(false);
+
+            if (session == null || session.getAttribute("utilisateurConnecte") == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
+
+            Utilisateur utilisateur =
+                    (Utilisateur) session.getAttribute("utilisateurConnecte");
+
+            Membre membre =
+                    membreService.rechercherParUtilisateurId(utilisateur.getId());
+
+            if (membre == null) {
+                throw new RuntimeException("Aucun membre associé à cet utilisateur.");
+            }
+
+            String campagneIdParam = request.getParameter("campagneId");
+            String dateEcheanceParam = request.getParameter("dateEcheance");
+
+            if (campagneIdParam == null || campagneIdParam.isEmpty()) {
+                throw new RuntimeException("Campagne introuvable.");
+            }
+
+            if (dateEcheanceParam == null || dateEcheanceParam.isEmpty()) {
+                throw new RuntimeException("Échéance introuvable.");
+            }
+
+            Long campagneId = Long.parseLong(campagneIdParam);
+            LocalDate dateEcheance = LocalDate.parse(dateEcheanceParam);
+
             cotisationService.declarerPaiementMembre(
                     membre.getId(),
                     campagneId,
+                    dateEcheance,
                     "Déclaré par membre"
-            );;
+            );
+
+            String message = URLEncoder.encode(
+                    "Paiement déclaré avec succès. En attente de validation admin.",
+                    StandardCharsets.UTF_8
+            );
 
             response.sendRedirect(
-                    request.getContextPath() + "/membre/cotisations"
+                    request.getContextPath()
+                            + "/membre/cotisations?success="
+                            + message
             );
 
         } catch (Exception e) {
+
+            e.printStackTrace();
+
+            String erreur = URLEncoder.encode(
+                    e.getMessage(),
+                    StandardCharsets.UTF_8
+            );
+
             response.sendRedirect(
                     request.getContextPath()
                             + "/membre/cotisations?erreur="
-                            + java.net.URLEncoder.encode(e.getMessage(), "UTF-8")
+                            + erreur
             );
         }
     }

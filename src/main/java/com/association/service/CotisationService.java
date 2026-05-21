@@ -10,9 +10,7 @@ import com.association.model.Membre;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CotisationService {
 
@@ -20,17 +18,40 @@ public class CotisationService {
     private final MembreDao membreDao = new MembreDao();
     private final CampagneCotisationDao campagneDao = new CampagneCotisationDao();
 
-    public void enregistrerCotisation(Long membreId, Long campagneId, String modePaiement) {
-        enregistrerCotisation(membreId, campagneId, modePaiement, Cotisation.StatutCotisation.PAYEE);
+    public void enregistrerCotisation(
+            Long membreId,
+            Long campagneId,
+            LocalDate dateEcheance,
+            String modePaiement
+    ) {
+        enregistrerCotisation(
+                membreId,
+                campagneId,
+                dateEcheance,
+                modePaiement,
+                Cotisation.StatutCotisation.PAYEE
+        );
     }
 
-    public void declarerPaiementMembre(Long membreId, Long campagneId, String modePaiement) {
-        enregistrerCotisation(membreId, campagneId, modePaiement, Cotisation.StatutCotisation.EN_ATTENTE);
+    public void declarerPaiementMembre(
+            Long membreId,
+            Long campagneId,
+            LocalDate dateEcheance,
+            String modePaiement
+    ) {
+        enregistrerCotisation(
+                membreId,
+                campagneId,
+                dateEcheance,
+                modePaiement,
+                Cotisation.StatutCotisation.EN_ATTENTE
+        );
     }
 
     private void enregistrerCotisation(
             Long membreId,
             Long campagneId,
+            LocalDate dateEcheance,
             String modePaiement,
             Cotisation.StatutCotisation statut
     ) {
@@ -46,24 +67,45 @@ public class CotisationService {
             throw new RuntimeException("Campagne introuvable.");
         }
 
-        if (campagne.getStatut() != CampagneCotisation.Statut.ACTIVE) {
-            throw new RuntimeException("Cette campagne n'est pas active.");
-        }
-
-        boolean dejaDeclare = cotisationDao.membreAPayeCampagne(membreId, campagneId);
-
-        if (dejaDeclare) {
-            throw new RuntimeException("Un paiement existe déjà pour cette campagne.");
+        if (dateEcheance == null) {
+            throw new RuntimeException("Échéance invalide.");
         }
 
         LocalDate aujourdHui = LocalDate.now();
 
+        if (dateEcheance.isAfter(aujourdHui)) {
+            throw new RuntimeException("Cette échéance n'est pas encore disponible.");
+        }
+
+        if (dateEcheance.isBefore(campagne.getDateDebut())) {
+            throw new RuntimeException("Cette échéance est avant le début de la campagne.");
+        }
+
+        if (campagne.getDateFin() != null && dateEcheance.isAfter(campagne.getDateFin())) {
+            throw new RuntimeException("Cette échéance dépasse la date de fin de la campagne.");
+        }
+
+        if (dateEcheance.isBefore(aujourdHui) && !campagne.isRetardTolere()) {
+            throw new RuntimeException("Le paiement en retard n'est pas autorisé pour cette campagne.");
+        }
+
+        boolean dejaDeclare = cotisationDao.membreAPayeEcheance(
+                membreId,
+                campagneId,
+                dateEcheance
+        );
+
+        if (dejaDeclare) {
+            throw new RuntimeException("Un paiement existe déjà pour cette échéance.");
+        }
+
         Cotisation cotisation = new Cotisation();
         cotisation.setMembre(membre);
         cotisation.setCampagne(campagne);
+        cotisation.setDateEcheance(dateEcheance);
         cotisation.setMontant(campagne.getMontant());
-        cotisation.setMois(aujourdHui.getMonthValue());
-        cotisation.setAnnee(aujourdHui.getYear());
+        cotisation.setMois(dateEcheance.getMonthValue());
+        cotisation.setAnnee(dateEcheance.getYear());
         cotisation.setDatePaiement(aujourdHui);
         cotisation.setModePaiement(modePaiement);
         cotisation.setStatut(statut);
@@ -90,18 +132,34 @@ public class CotisationService {
         return cotisationDao.findByCampagne(campagneId);
     }
 
-    public boolean membreAPayeCampagne(Long membreId, Long campagneId) {
-        return cotisationDao.membreAPayeCampagne(membreId, campagneId);
+    public List<Cotisation> listerPaiementsParMembre(Long membreId) {
+        return cotisationDao.findByMembre(membreId);
     }
 
-    public List<Membre> membresSansPaiement(Long campagneId) {
+    public Cotisation rechercherPaiementMembreCampagneEcheance(
+            Long membreId,
+            Long campagneId,
+            LocalDate dateEcheance
+    ) {
+        return cotisationDao.findByMembreCampagneEtEcheance(
+                membreId,
+                campagneId,
+                dateEcheance
+        );
+    }
+
+    public List<Membre> membresSansPaiement(
+            Long campagneId,
+            LocalDate dateEcheance
+    ) {
         List<Membre> membres = membreDao.findAll();
         List<Membre> resultat = new ArrayList<>();
 
         for (Membre membre : membres) {
-            boolean aDeclare = cotisationDao.membreAPayeCampagne(
+            boolean aDeclare = cotisationDao.membreAPayeEcheance(
                     membre.getId(),
-                    campagneId
+                    campagneId,
+                    dateEcheance
             );
 
             if (!aDeclare) {
@@ -110,48 +168,6 @@ public class CotisationService {
         }
 
         return resultat;
-    }
-
-    public boolean campagneEstEnRetard(Long campagneId) {
-        CampagneCotisation campagne = campagneDao.findById(campagneId);
-
-        if (campagne == null) {
-            return false;
-        }
-
-        if (campagne.getDateFin() == null) {
-            return false;
-        }
-
-        return LocalDate.now().isAfter(campagne.getDateFin());
-    }
-
-    public List<Membre> membresEnRetardPourCampagne(Long campagneId) {
-        if (!campagneEstEnRetard(campagneId)) {
-            return new ArrayList<>();
-        }
-
-        return membresSansPaiement(campagneId);
-    }
-
-    public long compterMembresEnRetardGlobal() {
-        List<CampagneCotisation> campagnes = campagneDao.findAll();
-        Set<Long> membresEnRetardIds = new HashSet<>();
-
-        for (CampagneCotisation campagne : campagnes) {
-            if (campagne.getDateFin() != null
-                    && LocalDate.now().isAfter(campagne.getDateFin())) {
-
-                List<Membre> membresNonPayes =
-                        membresSansPaiement(campagne.getId());
-
-                for (Membre membre : membresNonPayes) {
-                    membresEnRetardIds.add(membre.getId());
-                }
-            }
-        }
-
-        return membresEnRetardIds.size();
     }
 
     public long compterPaiementsEnAttente() {

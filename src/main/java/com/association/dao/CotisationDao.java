@@ -5,6 +5,7 @@ import com.association.util.JpaUtil;
 import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public class CotisationDao {
@@ -79,7 +80,7 @@ public class CotisationDao {
             return em.createQuery(
                             "SELECT c FROM Cotisation c " +
                                     "WHERE c.campagne.id = :campagneId " +
-                                    "ORDER BY c.datePaiement DESC",
+                                    "ORDER BY c.dateEcheance DESC",
                             Cotisation.class
                     )
                     .setParameter("campagneId", campagneId)
@@ -90,25 +91,61 @@ public class CotisationDao {
         }
     }
 
-    public boolean membreAPayeCampagne(Long membreId, Long campagneId) {
+    public List<Cotisation> findByMembre(Long membreId) {
         EntityManager em = JpaUtil.getEntityManager();
 
         try {
-            Long count = em.createQuery(
-                            "SELECT COUNT(c) FROM Cotisation c " +
+            return em.createQuery(
+                            "SELECT c FROM Cotisation c " +
                                     "WHERE c.membre.id = :membreId " +
-                                    "AND c.campagne.id = :campagneId",
-                            Long.class
+                                    "ORDER BY c.dateEcheance DESC",
+                            Cotisation.class
                     )
                     .setParameter("membreId", membreId)
-                    .setParameter("campagneId", campagneId)
-                    .getSingleResult();
-
-            return count > 0;
+                    .getResultList();
 
         } finally {
             em.close();
         }
+    }
+
+    public Cotisation findByMembreCampagneEtEcheance(
+            Long membreId,
+            Long campagneId,
+            LocalDate dateEcheance
+    ) {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            List<Cotisation> result = em.createQuery(
+                            "SELECT c FROM Cotisation c " +
+                                    "WHERE c.membre.id = :membreId " +
+                                    "AND c.campagne.id = :campagneId " +
+                                    "AND c.dateEcheance = :dateEcheance",
+                            Cotisation.class
+                    )
+                    .setParameter("membreId", membreId)
+                    .setParameter("campagneId", campagneId)
+                    .setParameter("dateEcheance", dateEcheance)
+                    .getResultList();
+
+            return result.isEmpty() ? null : result.get(0);
+
+        } finally {
+            em.close();
+        }
+    }
+
+    public boolean membreAPayeEcheance(
+            Long membreId,
+            Long campagneId,
+            LocalDate dateEcheance
+    ) {
+        return findByMembreCampagneEtEcheance(
+                membreId,
+                campagneId,
+                dateEcheance
+        ) != null;
     }
 
     public BigDecimal sommeTotaleCotisations() {
@@ -116,7 +153,9 @@ public class CotisationDao {
 
         try {
             return em.createQuery(
-                    "SELECT COALESCE(SUM(c.montant), 0) FROM Cotisation c WHERE c.statut = 'PAYEE'",
+                    "SELECT COALESCE(SUM(c.montant), 0) " +
+                            "FROM Cotisation c " +
+                            "WHERE c.statut = 'PAYEE'",
                     BigDecimal.class
             ).getSingleResult();
 

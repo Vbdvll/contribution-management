@@ -10,158 +10,135 @@ import java.util.List;
 public class AmendeDao {
 
     public void save(Amende amende) {
-
         EntityManager em = JpaUtil.getEntityManager();
 
         try {
-
             em.getTransaction().begin();
-
             em.persist(amende);
-
             em.getTransaction().commit();
 
-        }
-        catch(Exception e){
-
-            if(em.getTransaction().isActive()){
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-
             e.printStackTrace();
-        }
-        finally{
+
+        } finally {
             em.close();
         }
     }
 
-    public List<Amende> findAll(){
+    public List<Amende> findAll() {
+        EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em=JpaUtil.getEntityManager();
-
-        try{
-
+        try {
             return em.createQuery(
                     "SELECT a FROM Amende a ORDER BY a.dateGeneration DESC",
                     Amende.class
             ).getResultList();
 
-        }finally{
+        } finally {
             em.close();
         }
     }
 
-    public Amende findById(Long id){
+    public List<Amende> findByMembre(Long membreId) {
+        EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em=JpaUtil.getEntityManager();
+        try {
+            return em.createQuery(
+                            "SELECT a FROM Amende a " +
+                                    "WHERE a.membre.id = :membreId " +
+                                    "ORDER BY a.dateGeneration DESC",
+                            Amende.class
+                    )
+                    .setParameter("membreId", membreId)
+                    .getResultList();
 
-        try{
-            return em.find(
-                    Amende.class,
-                    id
-            );
-        }
-        finally{
+        } finally {
             em.close();
         }
     }
 
-    public boolean existeAmende(
-            Long membreId,
-            Long campagneId
-    ){
+    public Amende findById(Long id) {
+        EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em=
-                JpaUtil.getEntityManager();
+        try {
+            return em.find(Amende.class, id);
 
-        try{
-
-            Long count=
-                    em.createQuery(
-                                    "SELECT COUNT(a) FROM Amende a " +
-                                            "WHERE a.membre.id=:membreId " +
-                                            "AND a.campagne.id=:campagneId",
-                                    Long.class
-                            )
-                            .setParameter(
-                                    "membreId",
-                                    membreId
-                            )
-                            .setParameter(
-                                    "campagneId",
-                                    campagneId
-                            )
-                            .getSingleResult();
-
-            return count>0;
-
-        }
-        finally{
+        } finally {
             em.close();
         }
     }
 
-    public void update(Amende amende){
+    public boolean existeAmende(Long membreId, Long campagneId) {
+        EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em=
-                JpaUtil.getEntityManager();
+        try {
+            Long count = em.createQuery(
+                            "SELECT COUNT(a) FROM Amende a " +
+                                    "WHERE a.membre.id = :membreId " +
+                                    "AND a.campagne.id = :campagneId",
+                            Long.class
+                    )
+                    .setParameter("membreId", membreId)
+                    .setParameter("campagneId", campagneId)
+                    .getSingleResult();
 
-        try{
+            return count > 0;
 
+        } finally {
+            em.close();
+        }
+    }
+
+    public void update(Amende amende) {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
             em.getTransaction().begin();
-
             em.merge(amende);
-
             em.getTransaction().commit();
 
-        }
-        catch(Exception e){
-
-            if(em.getTransaction().isActive()){
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-
             e.printStackTrace();
-        }
-        finally{
+
+        } finally {
             em.close();
         }
     }
 
-    public BigDecimal sommeAmendesPayees(){
+    public BigDecimal sommeAmendesPayees() {
+        EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em=
-                JpaUtil.getEntityManager();
-
-        try{
-
+        try {
             return em.createQuery(
-                    "SELECT COALESCE(SUM(a.montant),0) " +
+                    "SELECT COALESCE(SUM(a.montant), 0) " +
                             "FROM Amende a " +
-                            "WHERE a.statutPaiement='PAYEE'",
+                            "WHERE a.statutPaiement = 'PAYEE'",
                     BigDecimal.class
             ).getSingleResult();
 
-        }finally{
+        } finally {
             em.close();
         }
     }
 
-    public BigDecimal sommeAmendesNonPayees(){
+    public BigDecimal sommeAmendesNonPayees() {
+        EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em=
-                JpaUtil.getEntityManager();
-
-        try{
-
+        try {
             return em.createQuery(
-                    "SELECT COALESCE(SUM(a.montant),0) " +
+                    "SELECT COALESCE(SUM(a.montant), 0) " +
                             "FROM Amende a " +
-                            "WHERE a.statutPaiement='NON_PAYEE'",
+                            "WHERE a.statutPaiement = 'NON_PAYEE'",
                     BigDecimal.class
             ).getSingleResult();
 
-        }finally{
+        } finally {
             em.close();
         }
     }

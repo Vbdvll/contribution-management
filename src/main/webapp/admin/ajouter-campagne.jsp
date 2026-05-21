@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Créer une campagne</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -61,6 +60,18 @@
                 <input type="date"
                        name="dateFin"
                        class="form-control">
+            </div>
+
+            <div class="form-check mb-4">
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="retardTolere"
+                       id="retardTolere"
+                       checked>
+
+                <label class="form-check-label" for="retardTolere">
+                    Autoriser les paiements en retard
+                </label>
             </div>
 
             <button type="submit" class="btn btn-primary">
