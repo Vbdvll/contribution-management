@@ -4,17 +4,21 @@ import com.association.service.MembreService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import jakarta.inject.Inject;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 @WebServlet("/admin/membres/ajouter")
 public class AjouterMembreServlet extends HttpServlet {
 
-    private final MembreService membreService = new MembreService();
+    @Inject
+    private MembreService membreService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setAttribute("localDate", LocalDate.now());
         request.getRequestDispatcher("/admin/ajouter-membre.jsp")
                 .forward(request, response);
     }
@@ -30,7 +34,20 @@ public class AjouterMembreServlet extends HttpServlet {
         String motDePasse = request.getParameter("motDePasse");
 
         try {
-            membreService.creerMembre(numero, prenom, nom, email, motDePasse);
+            LocalDate dateNaissance =
+                    LocalDate.parse(request.getParameter("dateNaissance"));
+            LocalDate dateAdhesion =
+                    LocalDate.parse(request.getParameter("dateAdhesion"));
+
+            membreService.creerMembre(
+                    numero,
+                    prenom,
+                    nom,
+                    email,
+                    motDePasse,
+                    dateNaissance,
+                    dateAdhesion
+            );
             response.sendRedirect(request.getContextPath() + "/admin/membres");
 
         } catch (Exception e) {

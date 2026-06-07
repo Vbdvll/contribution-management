@@ -13,12 +13,12 @@ public class SupprimerMembreServlet extends HttpServlet {
     private final MembreService membreService = new MembreService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         Long id = Long.parseLong(request.getParameter("id"));
 
-        membreService.supprimerMembre(id);
+        membreService.desactiverMembre(id);
 
         response.sendRedirect(request.getContextPath() + "/admin/membres");
     }

@@ -1,346 +1,154 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-
+<c:set var="activePage" value="cotisations" scope="request"/>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Gestion des cotisations</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-
-    <style>
-        body { background: #eeece6; font-family: Arial, sans-serif; }
-        .app { min-height: 100vh; padding: 30px; }
-
-        .sidebar {
-            width: 80px;
-            background: white;
-            border-radius: 30px;
-            padding: 25px 0;
-            min-height: 90vh;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-
-        .sidebar a {
-            width: 45px;
-            height: 45px;
-            margin: 12px auto;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #333;
-            text-decoration: none;
-            font-size: 20px;
-        }
-
-        .sidebar a.active,
-        .sidebar a:hover {
-            background: #1f1f1f;
-            color: white;
-        }
-
-        .main { flex: 1; margin-left: 25px; }
-
-        .page-card {
-            background: #f7f6f2;
-            border-radius: 30px;
-            padding: 35px;
-            min-height: 90vh;
-        }
-
-        .content-card {
-            background: white;
-            border-radius: 25px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-        }
-
-        .btn-dark-green {
-            background: #456b55;
-            color: white;
-            border: none;
-        }
-
-        .btn-dark-green:hover {
-            background: #365543;
-            color: white;
-        }
-
-        .filter-control {
-            border-radius: 18px;
-            border: none;
-            padding: 13px 16px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-        }
-
-        .badge-payee {
-            background: #d4edda;
-            color: #1b5e20;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .badge-attente {
-            background: #fff3cd;
-            color: #856404;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        table {
-            border-collapse: separate;
-            border-spacing: 0 12px;
-        }
-
-        thead th {
-            border: none;
-            background: transparent;
-            color: #777;
-        }
-
-        tbody tr {
-            background: white;
-            box-shadow: 0 6px 18px rgba(0,0,0,.05);
-        }
-
-        tbody td {
-            border: none;
-            padding: 18px;
-            vertical-align: middle;
-        }
-
-        tbody tr td:first-child {
-            border-radius: 16px 0 0 16px;
-        }
-
-        tbody tr td:last-child {
-            border-radius: 0 16px 16px 0;
-        }
-    </style>
+    <link href="${pageContext.request.contextPath}/assets/css/dashboard.css" rel="stylesheet">
 </head>
-
 <body>
-
-<div class="app d-flex">
-
-    <div class="sidebar">
-        <a href="${pageContext.request.contextPath}/admin/dashboard">
-            <i class="bi bi-grid-fill"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/membres">
-            <i class="bi bi-people"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/campagnes">
-            <i class="bi bi-calendar-check"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/cotisations" class="active">
-            <i class="bi bi-cash-stack"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/amendes">
-            <i class="bi bi-exclamation-triangle"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/logout">
-            <i class="bi bi-box-arrow-right"></i>
-        </a>
-    </div>
-
-    <main class="main">
-
-        <div class="page-card">
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold">Gestion des cotisations</h2>
-                    <p class="text-muted">
-                        Suivi des paiements, validations et retards.
-                    </p>
-                </div>
-
-                <a href="${pageContext.request.contextPath}/admin/cotisations/ajouter"
-                   class="btn btn-dark-green rounded-pill px-4 py-2">
-                    Enregistrer paiement
+<div class="dashboard-layout">
+    <%@ include file="/WEB-INF/fragments/admin-sidebar.jspf" %>
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div>
+                <h1>Gestion des cotisations</h1>
+                <p>Suivre et valider les paiements des membres.</p>
+            </div>
+            <div class="page-actions">
+                <a class="btn-app" href="${pageContext.request.contextPath}/admin/cotisations/ajouter">
+                    <i class="bi bi-plus-circle"></i> Enregistrer un paiement
                 </a>
             </div>
+        </header>
 
-            <form id="filterForm"
-                  method="get"
-                  action="${pageContext.request.contextPath}/admin/cotisations">
+        <form id="filterForm" method="get" action="${pageContext.request.contextPath}/admin/cotisations"
+              class="filter-panel">
+            <label class="form-label" for="campagneId">Campagne</label>
+            <select id="campagneId" name="campagneId" class="form-select">
+                <option value="">Toutes les campagnes</option>
+                <c:forEach var="campagne" items="${campagnes}">
+                    <option value="${campagne.id}" ${campagneId == campagne.id ? 'selected' : ''}>
+                        <c:out value="${campagne.titre}"/> - ${campagne.montant} FCFA
+                    </option>
+                </c:forEach>
+            </select>
+        </form>
 
-                <div class="mb-4">
-                    <label class="form-label">Campagne</label>
+        <c:if test="${not empty param.success}"><div class="alert alert-success"><c:out value="${param.success}"/></div></c:if>
+        <c:if test="${not empty param.erreur}"><div class="alert alert-danger"><c:out value="${param.erreur}"/></div></c:if>
 
-                    <select name="campagneId"
-                            class="form-select filter-control auto-filter">
-
-                        <option value="">Toutes les campagnes</option>
-
-                        <c:forEach var="campagne" items="${campagnes}">
-                            <option value="${campagne.id}"
-                                ${campagneId == campagne.id ? 'selected' : ''}>
-                                    ${campagne.titre} - ${campagne.montant} FCFA
-                            </option>
-                        </c:forEach>
-
-                    </select>
-                </div>
-
-            </form>
-
-            <div class="content-card">
-
-                <h4 class="mb-4">Paiements enregistrés</h4>
-
-                <table class="table">
-
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Membre</th>
-                        <th>Campagne</th>
-                        <th>Montant</th>
-                        <th>Date</th>
-                        <th>Mode</th>
-                        <th>Statut</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <c:forEach var="cotisation" items="${cotisations}">
-                        <tr>
-                            <td>${cotisation.id}</td>
-
-                            <td>
-                                    ${cotisation.membre.prenom}
-                                    ${cotisation.membre.nom}
-                            </td>
-
-                            <td>${cotisation.campagne.titre}</td>
-
-                            <td>${cotisation.montant} FCFA</td>
-
-                            <td>${cotisation.datePaiement}</td>
-
-                            <td>${cotisation.modePaiement}</td>
-
-                            <td>
-                                <c:choose>
-                                    <c:when test="${cotisation.statut == 'PAYEE'}">
-                                        <span class="badge-payee">PAYÉE</span>
-                                    </c:when>
-
-                                    <c:otherwise>
-                                        <span class="badge-attente">EN ATTENTE</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-
-                            <td>
-                                <c:if test="${cotisation.statut == 'EN_ATTENTE'}">
-                                    <a href="${pageContext.request.contextPath}/admin/cotisations/valider?id=${cotisation.id}&campagneId=${campagneId}"
-                                       class="btn btn-success btn-sm rounded-pill"
-                                       onclick="return confirm('Valider ce paiement ?')">
-                                        Valider
-                                    </a>
-                                </c:if>
-
-                                <c:if test="${cotisation.statut == 'PAYEE'}">
-                                    <span class="text-muted">Validé</span>
-                                </c:if>
-                            </td>
-                        </tr>
-                    </c:forEach>
-                    </tbody>
-
-                </table>
-
-            </div>
-
-            <c:if test="${not empty campagneId}">
-
-                <div class="content-card">
-
-                    <h4 class="mb-4">
-                        <c:choose>
-                            <c:when test="${campagneEnRetard}">
-                                Membres en retard pour cette campagne
-                            </c:when>
-                            <c:otherwise>
-                                Membres n’ayant pas encore payé cette campagne
-                            </c:otherwise>
-                        </c:choose>
-                    </h4>
-
-                    <table class="table">
-
+        <div class="content-stack">
+            <section class="content-panel">
+                <h2>Paiements enregistrés</h2>
+                <div class="table-responsive">
+                    <table class="table app-table">
                         <thead>
                         <tr>
-                            <th>Numéro</th>
-                            <th>Prénom</th>
-                            <th>Nom</th>
-                            <th>Email</th>
-                            <th>Action</th>
+                            <th>ID</th><th>Référence</th><th>Membre</th><th>Campagne</th><th>Montant</th>
+                            <th>Date</th><th>Mode</th><th>Statut</th><th>Action</th>
                         </tr>
                         </thead>
-
                         <tbody>
-                        <c:forEach var="membre" items="${membresSansPaiement}">
+                        <c:forEach var="cotisation" items="${cotisations}">
                             <tr>
-                                <td>${membre.numero}</td>
-                                <td>${membre.prenom}</td>
-                                <td>${membre.nom}</td>
-                                <td>${membre.utilisateur.email}</td>
-
+                                <td>${cotisation.id}</td>
+                                <td><c:out value="${cotisation.referenceTransaction}"/></td>
+                                <td><c:out value="${cotisation.membre.prenom}"/> <c:out value="${cotisation.membre.nom}"/></td>
+                                <td><c:out value="${cotisation.campagne.titre}"/></td>
+                                <td>${cotisation.montant} FCFA</td>
+                                <td>${cotisation.datePaiement}</td>
+                                <td><c:out value="${cotisation.modePaiement}"/></td>
                                 <td>
-                                    <a href="${pageContext.request.contextPath}/admin/amendes/generer?membreId=${membre.id}&campagneId=${campagneId}"
-                                       class="btn btn-warning btn-sm rounded-pill ${campagneEnRetard ? '' : 'disabled'}">
-                                        <c:choose>
-                                            <c:when test="${campagneEnRetard}">
-                                                Générer amende
-                                            </c:when>
-                                            <c:otherwise>
-                                                Pas encore en retard
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </a>
+                                    <span class="status-badge ${cotisation.statut == 'PAYEE' ? 'status-success' : 'status-warning'}">
+                                        ${cotisation.statut}
+                                    </span>
+                                </td>
+                                <td>
+                                    <c:if test="${cotisation.statut == 'EN_ATTENTE'}">
+                                        <form method="post" action="${pageContext.request.contextPath}/admin/cotisations/valider"
+                                              onsubmit="return confirm('Valider ce paiement ?');">
+                                            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                            <input type="hidden" name="id" value="${cotisation.id}">
+                                            <input type="hidden" name="campagneId" value="${campagneId}">
+                                            <button class="btn-app btn-small" type="submit">Valider</button>
+                                        </form>
+                                    </c:if>
+                                    <c:if test="${cotisation.statut == 'PAYEE'}">
+                                        <a class="btn-secondary-app btn-small"
+                                           href="${pageContext.request.contextPath}/admin/cotisations/recu?id=${cotisation.id}">
+                                            <i class="bi bi-file-earmark-pdf"></i> Reçu
+                                        </a>
+                                    </c:if>
                                 </td>
                             </tr>
                         </c:forEach>
                         </tbody>
-
                     </table>
-
                 </div>
+            </section>
 
+            <c:if test="${not empty campagneId}">
+                <section class="content-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2>${campagneEnRetard ? 'Membres en retard' : 'Membres sans paiement'}</h2>
+                            <span>Amende automatique : 10 % du montant de la campagne.</span>
+                        </div>
+                        <c:if test="${campagneEnRetard}">
+                            <form method="post"
+                                  action="${pageContext.request.contextPath}/admin/amendes/generer-automatiquement"
+                                  onsubmit="return confirm('Générer les amendes pour tous les membres en retard ?');">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                <input type="hidden" name="campagneId" value="${campagneId}">
+                                <button type="submit" class="btn-warning-app">
+                                    <i class="bi bi-lightning"></i> Générer automatiquement
+                                </button>
+                            </form>
+                        </c:if>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table app-table">
+                            <thead>
+                            <tr><th>Numéro</th><th>Prénom</th><th>Nom</th><th>Email</th><th>Action</th></tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="membre" items="${membresSansPaiement}">
+                                <tr>
+                                    <td><c:out value="${membre.numero}"/></td>
+                                    <td><c:out value="${membre.prenom}"/></td>
+                                    <td><c:out value="${membre.nom}"/></td>
+                                    <td><c:out value="${membre.utilisateur.email}"/></td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${campagneEnRetard}">
+                                                <a class="btn-warning-app btn-small"
+                                                   href="${pageContext.request.contextPath}/admin/amendes/generer?membreId=${membre.id}&campagneId=${campagneId}">
+                                                    Générer une amende
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise><span class="text-muted">Pas encore en retard</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </c:if>
-
         </div>
-
     </main>
-
 </div>
-
 <script>
-    const filterForm = document.getElementById("filterForm");
-    const fields = document.querySelectorAll(".auto-filter");
-
-    fields.forEach(function (field) {
-        field.addEventListener("change", function () {
-            filterForm.submit();
-        });
+    document.getElementById("campagneId").addEventListener("change", function () {
+        document.getElementById("filterForm").submit();
     });
 </script>
-
 </body>
 </html>

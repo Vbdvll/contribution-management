@@ -41,17 +41,16 @@ public class GenererAmendeServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        try {
+            Long membreId = Long.parseLong(request.getParameter("membreId"));
+            Long campagneId = Long.parseLong(request.getParameter("campagneId"));
+            BigDecimal montant = new BigDecimal(request.getParameter("montant"));
 
-        Long membreId = Long.parseLong(request.getParameter("membreId"));
-        Long campagneId = Long.parseLong(request.getParameter("campagneId"));
-        BigDecimal montant = new BigDecimal(request.getParameter("montant"));
-
-        amendeService.genererAmende(
-                membreId,
-                campagneId,
-                montant
-        );
-
-        response.sendRedirect(request.getContextPath() + "/admin/amendes");
+            amendeService.genererAmende(membreId, campagneId, montant);
+            response.sendRedirect(request.getContextPath() + "/admin/amendes");
+        } catch (Exception e) {
+            request.setAttribute("erreur", e.getMessage());
+            doGet(request, response);
+        }
     }
 }

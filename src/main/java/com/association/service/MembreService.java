@@ -4,14 +4,34 @@ import com.association.dao.MembreDao;
 import com.association.dao.UtilisateurDao;
 import com.association.model.Membre;
 import com.association.model.Utilisateur;
+import com.association.util.ValidationUtil;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
+@ApplicationScoped
 public class MembreService {
 
-    private final MembreDao membreDao = new MembreDao();
-    private final UtilisateurDao utilisateurDao = new UtilisateurDao();
-    private final AuthService authService = new AuthService();
+    private final MembreDao membreDao;
+    private final UtilisateurDao utilisateurDao;
+    private final AuthService authService;
+
+    public MembreService() {
+        this(new MembreDao(), new UtilisateurDao(), new AuthService());
+    }
+
+    @Inject
+    public MembreService(
+            MembreDao membreDao,
+            UtilisateurDao utilisateurDao,
+            AuthService authService
+    ) {
+        this.membreDao = membreDao;
+        this.utilisateurDao = utilisateurDao;
+        this.authService = authService;
+    }
 
     public java.util.List<Membre> listerTousLesMembres() {
         return membreDao.findAll();
@@ -20,10 +40,37 @@ public class MembreService {
         return membreDao.findById(id);
     }
 
-    public void supprimerMembre(Long id) {
-        membreDao.delete(id);
+    public void desactiverMembre(Long id) {
+        ValidationUtil.idPositif(id, "Le membre");
+        Membre membre = membreDao.findById(id);
+
+        if (membre == null) {
+            throw new RuntimeException("Membre introuvable.");
+        }
+
+        membre.setStatut(Membre.Statut.INACTIF);
+        membreDao.update(membre);
+
+        Utilisateur utilisateur = membre.getUtilisateur();
+        utilisateur.setActif(false);
+        utilisateurDao.update(utilisateur);
     }
-    public void modifierMembre(Long id, String numero, String prenom, String nom, String statut) {
+    public void modifierMembre(
+            Long id,
+            String numero,
+            String prenom,
+            String nom,
+            String email,
+            LocalDate dateNaissance,
+            LocalDate dateAdhesion,
+            String statut
+    ) {
+        ValidationUtil.idPositif(id, "Le membre");
+        numero = ValidationUtil.texteObligatoire(numero, "Le numero", 50);
+        prenom = ValidationUtil.texteObligatoire(prenom, "Le prenom", 100);
+        nom = ValidationUtil.texteObligatoire(nom, "Le nom", 100);
+        email = ValidationUtil.email(email);
+        validerDates(dateNaissance, dateAdhesion);
 
         Membre membre = membreDao.findById(id);
 
@@ -31,12 +78,36 @@ public class MembreService {
             throw new RuntimeException("Membre introuvable.");
         }
 
+        Membre memeNumero = membreDao.findByNumero(numero);
+        if (memeNumero != null && !memeNumero.getId().equals(id)) {
+            throw new RuntimeException("Ce numero de membre existe deja.");
+        }
+
+        Utilisateur utilisateurAvecEmail = utilisateurDao.findByEmail(email);
+        if (utilisateurAvecEmail != null
+                && !utilisateurAvecEmail.getId().equals(
+                membre.getUtilisateur().getId()
+        )) {
+            throw new RuntimeException("Cet email existe deja.");
+        }
+
         membre.setNumero(numero);
         membre.setPrenom(prenom);
         membre.setNom(nom);
-        membre.setStatut(Membre.Statut.valueOf(statut));
+        membre.setDateNaissance(dateNaissance);
+        membre.setDateAdhesion(dateAdhesion);
+        try {
+            membre.setStatut(Membre.Statut.valueOf(statut));
+        } catch (Exception e) {
+            throw new RuntimeException("Le statut du membre est invalide.");
+        }
 
         membreDao.update(membre);
+
+        Utilisateur utilisateur = membre.getUtilisateur();
+        utilisateur.setEmail(email);
+        utilisateur.setActif(membre.getStatut() == Membre.Statut.ACTIF);
+        utilisateurDao.update(utilisateur);
     }
     public java.util.List<Membre> rechercherMembres(String motCle) {
 
@@ -55,10 +126,17 @@ public class MembreService {
             String prenom,
             String nom,
             String email,
-            String motDePasse
+            String motDePasse,
+            LocalDate dateNaissance,
+            LocalDate dateAdhesion
     ) {
+        numero = ValidationUtil.texteObligatoire(numero, "Le numero", 50);
+        prenom = ValidationUtil.texteObligatoire(prenom, "Le prenom", 100);
+        nom = ValidationUtil.texteObligatoire(nom, "Le nom", 100);
+        email = ValidationUtil.email(email);
+        motDePasse = ValidationUtil.motDePasse(motDePasse);
+        validerDates(dateNaissance, dateAdhesion);
 
-        // Vérifier si email existe déjà
         Utilisateur utilisateurExistant =
                 utilisateurDao.findByEmail(email);
 
@@ -68,7 +146,10 @@ public class MembreService {
             );
         }
 
-        // Création utilisateur
+        if (membreDao.findByNumero(numero) != null) {
+            throw new RuntimeException("Ce numero de membre existe deja.");
+        }
+
         Utilisateur utilisateur = new Utilisateur();
 
         utilisateur.setEmail(email);
@@ -92,13 +173,69 @@ public class MembreService {
 
         membre.setNom(nom);
 
-        membre.setDateAdhesion(LocalDate.now());
+        membre.setDateNaissance(dateNaissance);
+        membre.setDateAdhesion(dateAdhesion);
 
         membre.setUtilisateur(utilisateur);
 
         membreDao.save(membre);
     }
+
+    public void creerCompteMembre(
+            String prenom,
+            String nom,
+            String email,
+            String motDePasse,
+            LocalDate dateNaissance
+    ) {
+        creerMembre(
+                genererNumeroMembre(),
+                prenom,
+                nom,
+                email,
+                motDePasse,
+                dateNaissance,
+                LocalDate.now()
+        );
+    }
+
     public long compterMembres() {
         return membreDao.countAll();
+    }
+
+    private void validerDates(
+            LocalDate dateNaissance,
+            LocalDate dateAdhesion
+    ) {
+        if (dateNaissance == null) {
+            throw new RuntimeException("La date de naissance est obligatoire.");
+        }
+
+        if (dateNaissance.isAfter(LocalDate.now())) {
+            throw new RuntimeException("La date de naissance est invalide.");
+        }
+
+        if (dateAdhesion == null) {
+            throw new RuntimeException("La date d'adhesion est obligatoire.");
+        }
+
+        if (dateAdhesion.isBefore(dateNaissance)) {
+            throw new RuntimeException(
+                    "La date d'adhesion doit suivre la date de naissance."
+            );
+        }
+    }
+
+    private String genererNumeroMembre() {
+        String numero;
+
+        do {
+            numero = "M-" + UUID.randomUUID()
+                    .toString()
+                    .substring(0, 8)
+                    .toUpperCase();
+        } while (membreDao.findByNumero(numero) != null);
+
+        return numero;
     }
 }

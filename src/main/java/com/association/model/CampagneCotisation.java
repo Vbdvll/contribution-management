@@ -37,6 +37,13 @@ public class CampagneCotisation {
     @Column(name = "retard_tolere", nullable = false)
     private boolean retardTolere = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type_participation", nullable = false)
+    private TypeParticipation typeParticipation = TypeParticipation.OBLIGATOIRE;
+
+    @Column(name = "code_inscription", unique = true, length = 12)
+    private String codeInscription;
+
     @Column(name = "date_creation")
     private LocalDateTime dateCreation = LocalDateTime.now();
 
@@ -51,6 +58,11 @@ public class CampagneCotisation {
         TERMINEE
     }
 
+    public enum TypeParticipation {
+        OBLIGATOIRE,
+        SUR_INSCRIPTION
+    }
+
     public CampagneCotisation() {}
 
     public Long getId() { return id; }
@@ -61,6 +73,8 @@ public class CampagneCotisation {
     public LocalDate getDateFin() { return dateFin; }
     public Statut getStatut() { return statut; }
     public boolean isRetardTolere() { return retardTolere; }
+    public TypeParticipation getTypeParticipation() { return typeParticipation; }
+    public String getCodeInscription() { return codeInscription; }
     public LocalDateTime getDateCreation() { return dateCreation; }
 
     public void setId(Long id) { this.id = id; }
@@ -71,5 +85,7 @@ public class CampagneCotisation {
     public void setDateFin(LocalDate dateFin) { this.dateFin = dateFin; }
     public void setStatut(Statut statut) { this.statut = statut; }
     public void setRetardTolere(boolean retardTolere) { this.retardTolere = retardTolere; }
+    public void setTypeParticipation(TypeParticipation typeParticipation) { this.typeParticipation = typeParticipation; }
+    public void setCodeInscription(String codeInscription) { this.codeInscription = codeInscription; }
     public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
 }

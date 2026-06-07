@@ -22,7 +22,7 @@ public class CotisationDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();
@@ -41,7 +41,7 @@ public class CotisationDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();

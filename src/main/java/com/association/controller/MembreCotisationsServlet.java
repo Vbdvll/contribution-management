@@ -7,6 +7,7 @@ import com.association.model.Utilisateur;
 import com.association.service.CampagneCotisationService;
 import com.association.service.CotisationService;
 import com.association.service.MembreService;
+import com.association.service.ParticipationCampagneService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -22,6 +23,8 @@ public class MembreCotisationsServlet extends HttpServlet {
     private final MembreService membreService = new MembreService();
     private final CampagneCotisationService campagneService = new CampagneCotisationService();
     private final CotisationService cotisationService = new CotisationService();
+    private final ParticipationCampagneService participationService =
+            new ParticipationCampagneService();
 
     public static class LigneCotisation {
         private CampagneCotisation campagne;
@@ -64,7 +67,10 @@ public class MembreCotisationsServlet extends HttpServlet {
                 membreService.rechercherParUtilisateurId(utilisateur.getId());
 
         List<CampagneCotisation> campagnes =
-                campagneService.listerCampagnes();
+                participationService.listerCampagnesPourMembre(
+                        membre.getId(),
+                        campagneService.listerCampagnes()
+                );
 
         List<LigneCotisation> lignes = new ArrayList<>();
 

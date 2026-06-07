@@ -1,287 +1,54 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
-
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="activePage" value="dashboard" scope="request"/>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
-    <meta charset="UTF-8">
-    <title>Dashboard Administrateur</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-          rel="stylesheet">
-
-    <style>
-
-        body{
-            background:#eeece6;
-            font-family:Arial,sans-serif;
-        }
-
-        .app{
-            min-height:100vh;
-            padding:30px;
-        }
-
-        .sidebar{
-            width:80px;
-            background:white;
-            border-radius:30px;
-            padding:25px 0;
-            min-height:90vh;
-            box-shadow:0 10px 30px rgba(0,0,0,.08);
-        }
-
-        .sidebar a{
-            width:45px;
-            height:45px;
-            margin:12px auto;
-            border-radius:50%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            text-decoration:none;
-            font-size:20px;
-            color:#333;
-        }
-
-        .sidebar a.active,
-        .sidebar a:hover{
-            background:#1f1f1f;
-            color:white;
-        }
-
-        .main{
-            flex:1;
-            margin-left:25px;
-        }
-
-        .page-card{
-            background:#f7f6f2;
-            border-radius:30px;
-            padding:35px;
-            min-height:90vh;
-        }
-
-        .stat-card{
-            background:white;
-            border-radius:25px;
-            padding:25px;
-            box-shadow:0 8px 25px rgba(0,0,0,.06);
-            height:100%;
-        }
-
-        .green{
-            background:#6f8f7b;
-            color:white;
-        }
-
-    </style>
-
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tableau de bord administrateur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/dashboard.css" rel="stylesheet">
 </head>
-
 <body>
-
-<div class="app d-flex">
-
-    <div class="sidebar">
-
-        <a href="${pageContext.request.contextPath}/admin/dashboard"
-           class="active">
-            <i class="bi bi-grid-fill"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/membres">
-            <i class="bi bi-people"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/campagnes">
-            <i class="bi bi-calendar-check"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/cotisations">
-            <i class="bi bi-cash-stack"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/admin/amendes">
-            <i class="bi bi-exclamation-triangle"></i>
-        </a>
-
-        <a href="${pageContext.request.contextPath}/logout">
-            <i class="bi bi-box-arrow-right"></i>
-        </a>
-
-    </div>
-
-    <main class="main">
-
-        <div class="page-card">
-
-            <h2 class="fw-bold mb-2">
-                Bonjour, Administrateur
-            </h2>
-
-            <p class="text-muted mb-5">
-                Vue globale de la gestion des cotisations de l'association
-            </p>
-
-
-            <div class="row g-4 mb-5">
-
-                <div class="col-md-3">
-
-                    <div class="stat-card">
-
-                        Membres
-
-                        <h1>
-
-                            ${totalMembres}
-
-                        </h1>
-
-                        Total enregistrés
-
-                    </div>
-
-                </div>
-
-                <div class="col-md-3">
-
-                    <div class="stat-card">
-
-                        Cotisations
-
-                        <h1>
-
-                            ${totalCotisations}
-                            FCFA
-
-                        </h1>
-
-                        Montant encaissé
-
-                    </div>
-
-                </div>
-
-                <div class="col-md-3">
-
-                    <div class="stat-card">
-
-                        Amendes payées
-
-                        <h1>
-
-                            ${totalAmendesPayees}
-                            FCFA
-
-                        </h1>
-
-                        Recouvrées
-
-                    </div>
-
-                </div>
-
-                <div class="col-md-3">
-
-                    <div class="stat-card green">
-
-                        Amendes non payées
-
-                        <h1>
-
-                            ${totalAmendesNonPayees}
-                            FCFA
-
-                        </h1>
-
-                        À suivre
-
-                    </div>
-
-                </div>
-
+<div class="dashboard-layout">
+    <%@ include file="/WEB-INF/fragments/admin-sidebar.jspf" %>
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div><h1>Tableau de bord</h1><p>Situation générale de l'association.</p></div>
+            <div class="header-actions">
+                <a class="icon-link" href="${pageContext.request.contextPath}/notifications" title="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <c:if test="${notificationsNonLues > 0}"><span class="notification-count">${notificationsNonLues}</span></c:if>
+                </a>
             </div>
-
-
-            <div class="row g-4">
-
-                <div class="col-md-4">
-
-                    <div class="stat-card">
-
-                        <h3>Membres</h3>
-
-                        <p>
-                            Ajouter, modifier, supprimer et consulter les membres.
-                        </p>
-
-                        <a href="${pageContext.request.contextPath}/admin/membres"
-                           class="btn btn-success rounded-pill">
-
-                            Gérer les membres
-
-                        </a>
-
-                    </div>
-
+        </header>
+        <section class="stats-grid">
+            <div class="stat-box"><div class="stat-label">Membres</div><div class="stat-value">${totalMembres}</div><div class="stat-note">Membres enregistrés</div></div>
+            <div class="stat-box green"><div class="stat-label">Cotisations encaissées</div><div class="stat-value">${totalCotisations}</div><div class="stat-note">FCFA reçus</div></div>
+            <div class="stat-box yellow"><div class="stat-label">Paiements en attente</div><div class="stat-value">${paiementsEnAttente}</div><div class="stat-note">À valider</div></div>
+            <div class="stat-box red"><div class="stat-label">Amendes non payées</div><div class="stat-value">${totalAmendesNonPayees}</div><div class="stat-note">FCFA à recouvrer</div></div>
+        </section>
+        <section class="dashboard-grid">
+            <div class="panel">
+                <div class="panel-header"><h2>Actions rapides</h2><span>${campagnesActives} campagne(s) active(s)</span></div>
+                <div class="quick-actions">
+                    <a class="quick-action" href="${pageContext.request.contextPath}/admin/membres/ajouter"><i class="bi bi-person-plus"></i><strong>Ajouter un membre</strong><span>Créer son compte et sa fiche.</span></a>
+                    <a class="quick-action" href="${pageContext.request.contextPath}/admin/campagnes/ajouter"><i class="bi bi-calendar-plus"></i><strong>Créer une campagne</strong><span>Définir montant et fréquence.</span></a>
+                    <a class="quick-action" href="${pageContext.request.contextPath}/admin/cotisations"><i class="bi bi-receipt-cutoff"></i><strong>Suivre les paiements</strong><span>Consulter les transactions.</span></a>
+                    <a class="quick-action" href="${pageContext.request.contextPath}/admin/amendes"><i class="bi bi-receipt"></i><strong>Suivre les amendes</strong><span>Voir les montants non réglés.</span></a>
                 </div>
-
-
-                <div class="col-md-4">
-
-                    <div class="stat-card">
-
-                        <h3>Cotisations</h3>
-
-                        <p>
-                            Enregistrer les paiements et suivre les cotisations.
-                        </p>
-
-                        <a href="${pageContext.request.contextPath}/admin/cotisations"
-                           class="btn btn-success rounded-pill">
-
-                            Gérer les cotisations
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-4">
-
-                    <div class="stat-card">
-
-                        <h3>Amendes</h3>
-
-                        <p>
-                            Gérer les amendes et les paiements.
-                        </p>
-
-                        <a href="${pageContext.request.contextPath}/admin/amendes"
-                           class="btn btn-success rounded-pill">
-
-                            Gérer les amendes
-
-                        </a>
-
-                    </div>
-
-                </div>
-
             </div>
-
-        </div>
-
+            <div class="panel">
+                <div class="panel-header"><h2>Notifications</h2><a class="btn-dashboard" href="${pageContext.request.contextPath}/notifications">Voir tout</a></div>
+                <div class="notification-list">
+                    <c:if test="${empty notificationsRecentes}"><p class="empty-state">Aucune notification récente.</p></c:if>
+                    <c:forEach var="notification" items="${notificationsRecentes}">
+                        <div class="notification-item"><strong><c:out value="${notification.titre}"/></strong><p><c:out value="${notification.message}"/></p><small>${notification.dateCreation.toLocalDate()}</small></div>
+                    </c:forEach>
+                </div>
+            </div>
+        </section>
     </main>
-
 </div>
-
 </body>
 </html>

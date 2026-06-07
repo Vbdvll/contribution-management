@@ -17,7 +17,7 @@ public class Cotisation {
     private Membre membre;
 
     @ManyToOne
-    @JoinColumn(name = "campagne_id")
+    @JoinColumn(name = "campagne_id", nullable = false)
     private CampagneCotisation campagne;
 
     @Column(name = "date_echeance", nullable = false)
@@ -37,6 +37,9 @@ public class Cotisation {
 
     @Column(name = "mode_paiement", length = 50)
     private String modePaiement;
+
+    @Column(name = "reference_transaction", nullable = false, unique = true, length = 50)
+    private String referenceTransaction;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -87,6 +90,10 @@ public class Cotisation {
         return modePaiement;
     }
 
+    public String getReferenceTransaction() {
+        return referenceTransaction;
+    }
+
     public StatutCotisation getStatut() {
         return statut;
     }
@@ -125,6 +132,10 @@ public class Cotisation {
 
     public void setModePaiement(String modePaiement) {
         this.modePaiement = modePaiement;
+    }
+
+    public void setReferenceTransaction(String referenceTransaction) {
+        this.referenceTransaction = referenceTransaction;
     }
 
     public void setStatut(StatutCotisation statut) {

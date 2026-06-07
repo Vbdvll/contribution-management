@@ -13,7 +13,7 @@ public class PayerAmendeServlet extends HttpServlet {
     private final AmendeService amendeService = new AmendeService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         Long id = Long.parseLong(request.getParameter("id"));

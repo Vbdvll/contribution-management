@@ -4,9 +4,11 @@ import com.association.model.Membre;
 import com.association.model.Utilisateur;
 import com.association.service.CotisationService;
 import com.association.service.MembreService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -20,73 +22,50 @@ public class PayerCotisationMembreServlet extends HttpServlet {
     private final CotisationService cotisationService = new CotisationService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
         try {
             HttpSession session = request.getSession(false);
-
-            if (session == null || session.getAttribute("utilisateurConnecte") == null) {
-                response.sendRedirect(request.getContextPath() + "/login");
-                return;
-            }
-
             Utilisateur utilisateur =
                     (Utilisateur) session.getAttribute("utilisateurConnecte");
-
             Membre membre =
                     membreService.rechercherParUtilisateurId(utilisateur.getId());
 
-            if (membre == null) {
-                throw new RuntimeException("Aucun membre associé à cet utilisateur.");
-            }
+            Long campagneId =
+                    Long.parseLong(request.getParameter("campagneId"));
+            LocalDate dateEcheance =
+                    LocalDate.parse(request.getParameter("dateEcheance"));
 
-            String campagneIdParam = request.getParameter("campagneId");
-            String dateEcheanceParam = request.getParameter("dateEcheance");
-
-            if (campagneIdParam == null || campagneIdParam.isEmpty()) {
-                throw new RuntimeException("Campagne introuvable.");
-            }
-
-            if (dateEcheanceParam == null || dateEcheanceParam.isEmpty()) {
-                throw new RuntimeException("Échéance introuvable.");
-            }
-
-            Long campagneId = Long.parseLong(campagneIdParam);
-            LocalDate dateEcheance = LocalDate.parse(dateEcheanceParam);
-
-            cotisationService.declarerPaiementMembre(
+            cotisationService.payerCotisationMembre(
                     membre.getId(),
                     campagneId,
-                    dateEcheance,
-                    "Déclaré par membre"
+                    dateEcheance
             );
 
-            String message = URLEncoder.encode(
-                    "Paiement déclaré avec succès. En attente de validation admin.",
-                    StandardCharsets.UTF_8
+            rediriger(
+                    request,
+                    response,
+                    "success",
+                    "Paiement effectué et confirmé avec succès"
             );
-
-            response.sendRedirect(
-                    request.getContextPath()
-                            + "/membre/cotisations?success="
-                            + message
-            );
-
         } catch (Exception e) {
-
-            e.printStackTrace();
-
-            String erreur = URLEncoder.encode(
-                    e.getMessage(),
-                    StandardCharsets.UTF_8
-            );
-
-            response.sendRedirect(
-                    request.getContextPath()
-                            + "/membre/cotisations?erreur="
-                            + erreur
-            );
+            rediriger(request, response, "erreur", e.getMessage());
         }
+    }
+
+    private void rediriger(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String parametre,
+            String message
+    ) throws IOException {
+        response.sendRedirect(
+                request.getContextPath()
+                        + "/membre/cotisations?"
+                        + parametre
+                        + "="
+                        + URLEncoder.encode(message, StandardCharsets.UTF_8)
+        );
     }
 }

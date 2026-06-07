@@ -69,6 +69,27 @@
       <version>0.4</version>
     </dependency>
 
+    <!-- CDI pour Tomcat -->
+    <dependency>
+      <groupId>org.jboss.weld.servlet</groupId>
+      <artifactId>weld-servlet-shaded</artifactId>
+      <version>5.1.6.Final</version>
+    </dependency>
+
+    <!-- Génération des reçus PDF -->
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>3.0.5</version>
+    </dependency>
+
+    <!-- Export Excel -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.5.1</version>
+    </dependency>
+
     <!-- Lombok (optionnel) -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -77,10 +98,32 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- Tests automatises -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.11.4</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.15.2</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
     <finalName>gestion-cotisations-association</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
+      </plugin>
+    </plugins>
   </build>
 
 </project>

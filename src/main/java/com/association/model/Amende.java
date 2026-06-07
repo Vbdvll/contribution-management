@@ -17,7 +17,7 @@ public class Amende {
     private Membre membre;
 
     @ManyToOne
-    @JoinColumn(name = "campagne_id")
+    @JoinColumn(name = "campagne_id", nullable = false)
     private CampagneCotisation campagne;
 
     @Column(nullable = false, precision = 10, scale = 2)

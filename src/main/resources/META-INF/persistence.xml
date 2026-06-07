@@ -11,6 +11,9 @@
         <class>com.association.model.Cotisation</class>
         <class>com.association.model.CampagneCotisation</class>
         <class>com.association.model.Amende</class>
+        <class>com.association.model.Notification</class>
+        <class>com.association.model.HistoriqueConnexion</class>
+        <class>com.association.model.ParticipationCampagne</class>
 
         <properties>
 

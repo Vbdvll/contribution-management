@@ -4,9 +4,11 @@ import com.association.model.Membre;
 import com.association.util.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 
+@ApplicationScoped
 public class MembreDao {
 
     public void save(Membre membre) {
@@ -21,7 +23,7 @@ public class MembreDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();
@@ -37,6 +39,19 @@ public class MembreDao {
                     Membre.class
             ).getResultList();
 
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Membre> findActifs() {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            return em.createQuery(
+                    "SELECT m FROM Membre m WHERE m.statut = 'ACTIF'",
+                    Membre.class
+            ).getResultList();
         } finally {
             em.close();
         }
@@ -72,6 +87,23 @@ public class MembreDao {
         }
     }
 
+    public Membre findByNumero(String numero) {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            List<Membre> resultats = em.createQuery(
+                            "SELECT m FROM Membre m WHERE LOWER(m.numero) = :numero",
+                            Membre.class
+                    )
+                    .setParameter("numero", numero.toLowerCase())
+                    .getResultList();
+
+            return resultats.isEmpty() ? null : resultats.get(0);
+        } finally {
+            em.close();
+        }
+    }
+
     public void update(Membre membre) {
         EntityManager em = JpaUtil.getEntityManager();
 
@@ -84,7 +116,7 @@ public class MembreDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();
@@ -109,7 +141,7 @@ public class MembreDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();

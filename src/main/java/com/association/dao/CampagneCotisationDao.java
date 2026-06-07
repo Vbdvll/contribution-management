@@ -3,6 +3,7 @@ package com.association.dao;
 import com.association.model.CampagneCotisation;
 import com.association.util.JpaUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,7 +22,7 @@ public class CampagneCotisationDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();
@@ -40,7 +41,7 @@ public class CampagneCotisationDao {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
+            throw e;
 
         } finally {
             em.close();
@@ -81,6 +82,24 @@ public class CampagneCotisationDao {
         try {
             return em.find(CampagneCotisation.class, id);
 
+        } finally {
+            em.close();
+        }
+    }
+
+    public CampagneCotisation findByCode(String code) {
+        EntityManager em = JpaUtil.getEntityManager();
+
+        try {
+            return em.createQuery(
+                            "SELECT c FROM CampagneCotisation c "
+                                    + "WHERE UPPER(c.codeInscription) = :code",
+                            CampagneCotisation.class
+                    )
+                    .setParameter("code", code.toUpperCase())
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         } finally {
             em.close();
         }
